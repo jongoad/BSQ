@@ -3,12 +3,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-struct map{
+struct setup{
 	char *raw;
-	char *board;
-	char *legend;
-	int	key;
+	char *map;
+	char legend[4];
 	char *file_path;
+	int width;
+	int	height;
+	int	key;
 }test;
 
 //Function to get the total size of the map file to malloc an array
@@ -47,6 +49,7 @@ int get_file_size(void)
 		return (count);
 }
 
+//Function to convert entire map into a char array
 int file_to_string(void)
 {
    //Create an int that will hold the file descriptor
@@ -76,16 +79,202 @@ int file_to_string(void)
 	if (status == -1 || fd == -1)
 	   return (-1);
    else
+		return (size);
+}
+
+//Function to read the legend and convert to a char array
+//May need to split into check and convert as seperate functions
+int	get_legend(char *raw_str, char *legend, int height)
+{
+	int i;
+	int	status; //0 is starting, 1 is found lines, 2 is found empty, 3 is found obstacle, 4 is found fill
+
+	status = 0;
+	i = 0;
+	while (raw_str[i] != '\n')
+	{
+		if (raw_str[i] >= '0' && raw_str[i] <= '9' && status == 0) //Amount of lines (CAN BE DOUBLE DIGIT< FIX THIS)
+		{
+			height = raw_str[i] - '0';
+			status = 1;
+		}
+		else if (raw_str[i] >= 32 && status == 1) //Empty char
+		{
+			legend[0] = raw_str[i];
+			status = 2;
+		}
+		else if (raw_str[i] >= 32 && status == 2) //Obstacle char
+		{
+			legend[1] = raw_str[i];
+			status = 3;
+		}
+		else if (raw_str[i] >= 32 && status == 3) //Fill char
+		{
+			legend[2] = raw_str[i];
+			status = 4;
+		}
+		i++;
+	}
+	if (raw_str[i] == '\n' && status == 4)
+		return (1);
+	else
+		return (0);
+}
+
+//Function to ensure char is part of the legend
+int	check_legend(char c, char *legend)
+{
+	int i;
+	int	is_valid;
+	int	is_obst;
+
+	is_valid = 0;
+	is_obst = 0;
+	i = 0;
+	while (legend[i] != '\0')
+	{
+		if (c == legend[i])
+			is_valid = 1;
+		if (c == legend[1])
+			is_obst = 1;
+		i++;
+	}
+	if (is_valid == 1 && is_obst == 1)
+		return (2);
+	else if (is_valid  == 1)
+		return (1);
+	else
+		return (0);
+}
+
+//Function to check that map only contains valid chars
+int	check_map_chars(char *raw_str, char *legend, int size)
+{
+	int i;
+	int found_lines;
+	int	found_obst;
+	
+	found_lines = 0;
+	found_obst = 0;
+	i = 0;
+	while (i < size)
+	{
+		if (raw_str[i] >= '0' && raw_str[i] <= '9' && found_lines == 0)
+		{
+			found_lines = 1;
+			i++;
+		}
+		if (check_legend(raw_str[i], legend) == 0 && raw_str[i] != '\n')
+			return (0);
+		else if (check_legend(raw_str[i], legend) == 2)
+			found_obst = 1;
+		i++;
+	}
+	printf("found_obst is %d\n", found_obst);
+	if (found_obst == 0)
+		return (0);
+	else
 		return (1);
 }
 
+//Function to make sure line lengths are correct
+int	check_map_lines(char *raw_str, int height, int size)
+{
+	int i;
+	int	line_len_first;
+	int	line_len;
+	int	line_c;
 
-int	main(void)
+	i = 0;
+	line_len_first = 0;
+	line_len = 0;
+	line_c = 0;
+	while (i < size)
+	{
+		while (raw_str[i] != '\n' && line_c != 1) // Iterate to end of first line to avoid legend.
+		{
+			if (raw_str[i + 1] == '\n')
+				line_c = 1;
+			i++;
+		}
+		line_len = 0;
+		while (raw_str[i + line_c] != '\n' && line_c == 1) //Get length of first line
+			line_len_first++;
+			while (raw_str[i + line_c] != '\n')
+			line_len++;
+		if (raw_str[i + line_c] == '\n')
+			line_c++;
+		if (line_len != line_len_first) //If line_len is not same as first map line, return map error
+			return (0);
+		i++;
+	}
+	if (line_c - 1 != height) //If total lines is not equal to height, map error
+		return (0);
+	else
+		return (1);
+}
+
+//REDO THIS- STILL NEEDS TO CHECK FOR LINE LENGTH< TOTAL LINE < AT LEAST ONE OBST
+int	check_map(char *raw_str, char *legend, int height, int size)
+{
+	int status;
+
+	status = check_map_chars(raw_str, legend, size);
+	printf("status is %d\n", status);
+	if (status == 0)
+		return (0);
+	status = check_map_lines(raw_str, height, size);
+	if (status == 0)
+		return (0);
+	else
+		return (1);		
+}
+
+//Function to parse map and ensure validity of map(line length, symbol legend), and fill legend and board
+int	check_get_map(char *raw_str, char *legend, int height, int size)
 {
 	int	status;
-	test.file_path = "map.txt";
-	status = file_to_string();
 
-	printf("%s\n", test.raw);
+	//Need to pass the current map in each time, so change this after test
+	status = get_legend(raw_str, legend, height);
+	if (status == 0)
+		return (0);
+	status = check_map(raw_str, legend, height, size);
+	if (status == 0)
+		return (0);
+	else
+		return (1);
+
+}
+
+
+
+
+//RULES:
+//Every line must have a line break
+//There must be at least one obstacle? Or maybe just needs to be minimum two lines for a box to be found?
+//All map lines must be the same length
+//Must be 3 legend chars on first line
+//Legend chars must be unique (no duplicate)
+//Chars on map can only be those from legend
+
+
+//TEST MAIN
+int	main(void)
+{	
+	int size;
+	int	status;
+
+	test.file_path = "map4.txt";
+	size = file_to_string();
+	if (size < 0)
+		printf("malloc error\n");
+		//return (0);
+	status = check_get_map(test.raw, test.legend, test.height, size);
+	printf("status is %d\n", status);
+	//printf("legend is %s\n", test.legend);
+	//printf("height is %d\n", test.height);
+	//printf("size is %d\n", size);
+	//printf("%s\n", test.raw);
 	return (0);
 }
