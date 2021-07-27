@@ -1,0 +1,70 @@
+___________________________________________________________________________________________________________________
+BITCHIN BSQ BABBLIN IN ORDER TO BBQ THIS BADASS BSQ BITCH
+___________________________________________________________________________________________________________________
+
+
+STEP 1: READ THE MAP INTO OUR PROGRAM
+
+	- Get the information required to read the map from the first line.
+		- The number of lines
+		- The empty character
+		- The obstacle character
+		- The full character
+	
+	- Find the start of the map, and convert the map into a useable form (probably a 2d char array)
+		- Depending on the formatting of the map, and if newline is used, will need to parse it and ensure
+		  that the line numbers are used to create the proper size and shape array.
+
+	Functions Required:
+	
+	- get_legend - Some kind of ATOI-like function, but to grab specifically the map "legend" information.
+	- get_map - Another function to find the start and end of the map itself and read it into an array.
+	- check_map - Ensure that each map is valid according to the rules. If not valid, save an error state to be 
+				  printed and move on to the next map.
+	- check_args - Ensure that the command line input is valid.
+
+
+	STEP 2: RUN SOLVING ALGORITHM
+
+	- 
+
+	STEP ?: PRINT ALL SOLUTIONS TO THE TERMINAL
+
+		- Print the solution found for each map to the terminal, followed by a newline.
+		- If there was a map error, display "map error" ON THE ERROR OUTPUT, followed by a newline.
+		- Move on to next map after succesful print, or map error.
+
+
+
+
+	STEP ?: FREE ALL MEMORY BEFORE EXITING
+
+
+
+
+
+
+
+
+
+
+___________________________________________________________________________________________________________________
+TASKS
+___________________________________________________________________________________________________________________
+
+	- Create a header file that contains all necessary structs, includes, and prototypes.
+	- Create a makefile that will properly compile program and clean up after (CANNOT RELINK, WHATEVER THAT MEANS).
+	- Write perl script to create maps. (DONE)
+
+
+
+___________________________________________________________________________________________________________________
+FUNCTION TO WRITE
+___________________________________________________________________________________________________________________
+
+
+
+
+___________________________________________________________________________________________________________________
+NOTES ABOUT MUSTARD, KETCHUP, AND OTHER BBQ CONDIMENTS FOR BBQING THE BITCHIN BSQ
+___________________________________________________________________________________________________________________
