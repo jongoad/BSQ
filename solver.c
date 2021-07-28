@@ -61,8 +61,6 @@ void	solver(s_data maps)
 	//printmap(maps);
 	printf("map height = %d; map width = %d\n", maps.height, maps.width);
 
-	time_t begin, end;
-    time(&begin);
 	y_pos = 0;
 	x_pos = 0;
 	size = sq_calc(x_pos, y_pos, maps);
