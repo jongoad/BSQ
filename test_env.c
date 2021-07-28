@@ -238,7 +238,6 @@ s_data	check_map_height(s_data maps)
 	}
 	if (line_count != maps.height)
 		maps.error_status = 1;
-	printf("%s\nerror is %d\n\n", maps.file_path, maps.error_status);
 	return (maps);
 }
 
@@ -277,8 +276,37 @@ char* write_map(s_data maps)
 
 
 /**********************************************************************************************/
-/*                                  Status: COMPLETE                                       */
+/*                                  Status: COMPLETE                                          */
 /**********************************************************************************************/
+
+char	*no_args(void)
+{
+	char	buf;
+	int		fd;
+
+	fd = open("stdin_map", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	while (read(STDIN_FILENO, &buf, 1))
+	{
+		write(fd, &buf, 1);
+	}
+	close(fd);
+	return ("stdin_map");
+}
+
+//If no files are passed as args, read from standard input
+s_data* init_structs_stdin(s_data* maps)
+{	
+	maps[0].error_status = 0;
+	maps[0].width = 0;
+	maps[0].file_path = no_args();
+	maps[0] = file_to_string(maps[0]);
+	maps[0] = get_legend(maps[0]);
+	maps[0] = check_all(maps[0]);
+	if (maps[0].error_status == 0)
+		maps[0].map = write_map(maps[0]);
+
+	return (maps);
+}
 
 //Function to initialize struct array members and make calls to other init functions
 s_data* init_structs(int	argc, char	**argv, s_data* maps)
@@ -307,26 +335,41 @@ s_data* init_structs(int	argc, char	**argv, s_data* maps)
 //Move into its own file after testing
 int	main(int	argc, char	**argv)
 {
+	int i;
+
+	i = 0;
 	//First thing we must do is declare our structs and assign memory
 	s_data *maps = NULL;
 	maps = malloc(sizeof(*maps) * (argc - 1));
 
-	//Now we run out struct initialization function
-	maps = init_structs(argc, argv, maps);
+
+	if (argc == 1)
+		maps = init_structs_stdin(maps);
+	else
+		maps = init_structs(argc, argv, maps);
 
 	//Test print
-	int i;
-
-	i = 0;
+	if (argc == 1)
+	{
+		printf("path is %s.\nwidth is %d.\nheight is %d.\n", maps[i].file_path, maps[i].width, maps[i].height);
+		printf("error status is %d\n", maps[i].error_status);
+		printf("legend is %s\n", maps[i].legend);
+		printf("map %d contains:\n%s\n", i, maps[i].raw_str);
+		printf("\n");
+		printf("final map output is:\n%s", maps[i].map);
+		printf("\n");
+	}
+	
+	//Test print
 	while (i < argc - 1)
 	{
-		//printf("path is %s.\nwidth is %d.\nheight is %d.\n", maps[i].file_path, maps[i].width, maps[i].height);
-		//printf("path is %s\n error status is %d\n", maps[i].file_path, maps[i].error_status);
-		//printf("legend is %s\n", maps[i].legend);
-		//printf("map %d contains:\n%s\n", i, maps[i].raw_str);
-		//printf("\n");
-		//printf("final map output is:\n%s", maps[i].map);
+		printf("path is %s.\nwidth is %d.\nheight is %d.\n", maps[i].file_path, maps[i].width, maps[i].height);
+		printf("error status is %d\n", maps[i].error_status);
+		printf("legend is %s\n", maps[i].legend);
+		printf("map %d contains:\n%s\n", i, maps[i].raw_str);
 		printf("\n");
+		printf("final map output is:\n%s", maps[i].map);
+		printf("\n\n");
 		i++;
 	}
 	//Right before program return free memory
@@ -336,9 +379,8 @@ int	main(int	argc, char	**argv)
 
 //To do
 
-//Read from standard input if no args passed
+//Output error to stderr
 //Makefile
 //Header file
 //Test
-
 
