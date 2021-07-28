@@ -1,161 +1,138 @@
 #include <unistd.h>
 #include <stdio.h>
-struct s_biggest
-{
-	int	x_pos;
-	int	y_pos;
-	int	size;
-} t_biggest;
-
-struct s_square
-{
-	int	l_bound;
-	int	r_bound;
-	int	t_bound;
-	int	d_bound;
-	int	size;
-} t_square;
-
-struct setup{
-	char *raw;
+typedef struct {
+	char *raw_str;
+	int size;
 	char *map;
-	char legend[4]; //0 = 'empty', 1 = 'obstacle'
 	char *file_path;
+	char legend[4];
 	int width;
 	int	height;
-	int	key;
-} test;
+	int	error_status;
+} s_data;
 
-//returns the biggest value between two ints
-//cmp == b will return biggest 
-//cmp == s will return smallest
-int	int_cmp(int a, int b, char cmp)
-{
-	if (a >= b && cmp == 'b')
-		return (a);
-	if (a <= b && cmp == 's')
-		return (a);
-	return (b);
-}
+void	print_full_square(int x_pos, int y_pos, int size, s_data maps);
+int sq_calc(int x_pos, int y_pos, s_data maps);
 
-int	square_height(int x_pos, int y_pos, int sq_width, int width, int height, char *map)
-{
-	char	cursor;
-	int		x;
-	int		y;
+void	printmap(s_data maps);
 
-	x = x_pos;
-	y = y_pos;
-	printf("in the square_height fct, the sq_width passed is %d\n", sq_width);
-	while (map[x + (width + 1) * y] != 'o' && y < height)
-	{
-		x++;
-		if (x == x_pos + sq_width - 1)
-		{
-			x = x_pos;
-			y++;
-		}
-		printf("sq_height pos_x = %d, pos_y = %d, cursor = %c\n", x, y, map[x + (width + 1) * y]);
-	}
-	return (y - y_pos);
-}
-
-int	square_size(int *x_pos, int *y_pos, char *map, int width, int height)
+int sq_calc(int x_pos, int y_pos, s_data maps)
 {
 	int	x;
 	int	y;
-	int sq_width;
-	int	sq_height;
+	int	size;
 
-	x = *x_pos;
-	y = *y_pos;
-	sq_width = width - *x_pos;
-	while (map[x + (width + 1) * y] != 'o' && y < height && y - *y_pos < sq_width)
+	size = 0;
+	x = x_pos;
+	y = y_pos;
+	while (maps.map[x + (maps.width + 1) * y] != maps.legend[1] && y < maps.height && x < maps.width)
 	{
-		x++;
-		if (x == width)
-		{
-			x = *x_pos;
-			y++;
-		}
-		printf("sq_size pos_x = %d, pos_y = %d, cursor = %c\n", x, y, map[x + (width + 1) * y]);
+		size++;
+		x = x_pos - 1;
+		y = y_pos + size;
+			while (++x <= x_pos + size && x < maps.width && y < maps.height)
+			{
+				if (maps.map[x + (maps.width + 1) * y] == maps.legend[1])
+						return (size - 1);
+				while (x == x_pos + size && y >= y_pos)
+				{
+					y--;
+					if (maps.map[x + (maps.width + 1) * y] == maps.legend[1])
+						return (size - 1);
+				}
+			}
 	}
-	sq_width = int_cmp(sq_width, x - *x_pos, 's');
-	printf("sq_width = %d and height = %d\n", sq_width, y - *y_pos);
-	if (sq_width > y - *y_pos)
-	{
-		y += square_height(*x_pos, y, (x - *x_pos), width, height, map);
-		return (int_cmp(y - *y_pos, sq_width, 's'));
-	}
-	return (int_cmp(y - *y_pos, sq_width, 'b'));
+	return (size - 1);
 }
-
-
-
-
-
 
 //NOTE: if  is smaller than , sq_size = y,
 //but the new x_pos needs to be x_pos + x, because there might be a bigger square 1 further
+#include <time.h>
 
-void	print_full_square(int x_pos, int y_pos, int size, int width, int height, char *map);
 
-int	main(void)
+void	solver(s_data maps)
 {
-	char *map = "...........................\n...........................\n....o.......o..............\n...........................\n....o......................\n...............o...........\n...........................\n......o..............o.....\n..o.......o................\n";
-	int height = 9;
-	int width = 27;
-	int x_pos = 0;
-	int y_pos = 0;
-	int	x_pos_biggest = 0;
-	int y_pos_biggest = 0;
+	int	x_pos;
+	int	y_pos;
+	int	x_pos_biggest;
+	int	y_pos_biggest;
+	int size;
 
+	//printmap(maps);
+	printf("map height = %d; map width = %d\n", maps.height, maps.width);
 
-	int size = square_size(&x_pos, &y_pos, map, width, height);
-	while (y_pos < height)
+	time_t begin, end;
+    time(&begin);
+	y_pos = 0;
+	x_pos = 0;
+	size = sq_calc(x_pos, y_pos, maps);
+	x_pos_biggest = x_pos;
+	y_pos_biggest = y_pos;
+	printf("Biggest is [%d, %d], size = %d\n", x_pos_biggest, y_pos_biggest, size);
+	while (y_pos < maps.height)
 	{
 		x_pos = 0;
-		while (x_pos < width)
+		while (x_pos < maps.width)
 		{
-			if (square_size(&x_pos, &y_pos, map, width, height) > size)
+			if (sq_calc(x_pos, y_pos, maps) > size)
 			{
-				size = square_size(&x_pos, &y_pos, map, width, height);
+				size = sq_calc(x_pos, y_pos, maps);
 				x_pos_biggest = x_pos;
 				y_pos_biggest = y_pos;
+				printf("Biggest is [%d, %d], size = %d\n", x_pos_biggest, y_pos_biggest, size);
 			}
 			x_pos++;
 		}
 		y_pos++;
 	}
 	printf("coords of biggest : [%d, %d]\n", x_pos_biggest, y_pos_biggest);
+	printf("map height at the end = %d; map width = %d\n", maps.height, maps.width);
 
-	printf("For this map :\n%s\npos_x = %d, pos_y = %d, possible square size = %d\n", map, x_pos, y_pos, size);
-	print_full_square(x_pos_biggest, y_pos_biggest, size, width, height, map);
+	printmap(maps);
+	printf("pos_x = %d, pos_y = %d, possible square size = %d\n", x_pos_biggest, y_pos_biggest, size);
+	print_full_square(x_pos_biggest, y_pos_biggest, size, maps);
+	printf("Time measured: %ld seconds.\n", elapsed);
 
 }
 
-void	print_full_square(int x_pos, int y_pos, int size, int width, int height, char *map)
+void	print_full_square(int x_pos, int y_pos, int size, s_data maps)
 {
-	int xndex;
-	int yndex;
+	int x;
+	int y;
 
-	yndex = 0;
-	while (yndex < height)
+	y = 0;
+	while (y < maps.height)
 	{
-		xndex = 0;
-		while (xndex <= width)
+		x = 0;
+		while (x <= maps.width)
 		{
-			if (xndex >= x_pos && xndex < (x_pos + size) && yndex >= y_pos && yndex < (y_pos + size))
-				write (1, "x", sizeof(char));
+			if (x >= x_pos && x < (x_pos + size) && y >= y_pos && y < (y_pos + size))
+				write (1, &maps.legend[2], sizeof(char));
 			else
-				write (1, &map[xndex + (width + 1) * yndex], sizeof(char));
-			xndex++;
+				write (1, &maps.map[x + (maps.width + 1) * y], sizeof(char));
+			x++;
 		}
-		yndex++;
+		y++;
 	}
 }
 
-
+void	printmap(s_data maps)
+{
+	int x = 0;
+	int y = 0;
+	
+	while (y < maps.height)
+	{
+		x = 0;
+		while (x <= maps.width)
+		{
+			write (1, &maps.map[x + (maps.width + 1) * y], sizeof(char));
+			x++;
+		}
+		y++;
+	}
+	return ;
+}
 
 
 
