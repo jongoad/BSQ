@@ -2,16 +2,27 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
-
+/*
 struct setup{
 	char *raw;
 	char *map;
 	char legend[4];
 	char *file_path;
+	int dimension[2];
 	int width;
 	int	height;
 	int	key;
-}test;
+}test; */
+
+typedef struct {
+	char *raw_str;
+	char *map;
+	char *file_path;
+	char legend[4];
+	int width;
+	int	height;
+	int	error_status;
+} s_data;
 
 //Function to get the total size of the map file to malloc an array
 int get_file_size(void)
@@ -82,9 +93,14 @@ int file_to_string(void)
 		return (size);
 }
 
+
+
+
+
+
 //Function to read the legend and convert to a char array
 //May need to split into check and convert as seperate functions
-int	get_legend(char *raw_str, char *legend, int height)
+int	get_legend(char *raw_str, char *legend, int *dimension)
 {
 	int i;
 	int	status; //0 is starting, 1 is found lines, 2 is found empty, 3 is found obstacle, 4 is found fill
@@ -95,10 +111,12 @@ int	get_legend(char *raw_str, char *legend, int height)
 	{
 		if (raw_str[i] >= '0' && raw_str[i] <= '9' && status == 0) //Amount of lines (CAN BE DOUBLE DIGIT< FIX THIS)
 		{
-			height = raw_str[i] - '0';
+
+			dimension[1] = raw_str[i] - '0';
 			status = 1;
 		}
-		else if (raw_str[i] >= 32 && status == 1) //Empty char
+
+		if (raw_str[i] >= 32 && status == 1) //Empty char
 		{
 			legend[0] = raw_str[i];
 			status = 2;
@@ -170,15 +188,22 @@ int	check_map_chars(char *raw_str, char *legend, int size)
 			found_obst = 1;
 		i++;
 	}
-	printf("found_obst is %d\n", found_obst);
 	if (found_obst == 0)
 		return (0);
 	else
 		return (1);
 }
 
+
+
+//Function to make sure number of map lines is correct
+//int	check_map_height(char *raw_str,int *dimension, int size)
+
+
+
 //Function to make sure line lengths are correct
-int	check_map_lines(char *raw_str, int height, int size)
+//MAP HEIGHT AND WIDTH ARE THE SAME!!!!
+int	check_map_lines(char *raw_str, int *dimension, int size)
 {
 	int i;
 	int	line_len_first;
@@ -189,41 +214,59 @@ int	check_map_lines(char *raw_str, int height, int size)
 	line_len_first = 0;
 	line_len = 0;
 	line_c = 0;
-	while (i < size)
+
+	while (raw_str[i] != '\n' && line_c == 0) // Iterate to end of first line to avoid legend.
+		i++;
+	if (raw_str[i] == '\n')
 	{
-		while (raw_str[i] != '\n' && line_c != 1) // Iterate to end of first line to avoid legend.
+			line_c = 1;
+			i++;
+	}
+	while (raw_str[i] != '\n' && line_c == 1) //Get length of first map line
+	{
+		line_len_first++;
+		i++;
+	}
+	if (raw_str[i] == '\n')
+	{
+			line_c++;
+			i++;
+	}
+	printf("first width is %d\n", line_len_first);
+	while (i < size) //Check length of the rest of the lines and get total height
+	{
+		line_len = 0;
+		while (raw_str[i] != '\n')
 		{
-			if (raw_str[i + 1] == '\n')
-				line_c = 1;
+			line_len++;
 			i++;
 		}
-		line_len = 0;
-		while (raw_str[i + line_c] != '\n' && line_c == 1) //Get length of first line
-			line_len_first++;
-			while (raw_str[i + line_c] != '\n')
-			line_len++;
-		if (raw_str[i + line_c] == '\n')
-			line_c++;
+		if (raw_str[i] == '\n')
+		{
+				line_c++;
+		}
+		printf("current width is %d\n", line_len);
 		if (line_len != line_len_first) //If line_len is not same as first map line, return map error
 			return (0);
 		i++;
 	}
-	if (line_c - 1 != height) //If total lines is not equal to height, map error
+	dimension[0] = line_len_first;
+	if (line_c - 1 != dimension[1]) //If total lines is not equal to height, map error
 		return (0);
 	else
 		return (1);
 }
 
 //REDO THIS- STILL NEEDS TO CHECK FOR LINE LENGTH< TOTAL LINE < AT LEAST ONE OBST
-int	check_map(char *raw_str, char *legend, int height, int size)
+int	check_map(char *raw_str, char *legend, int *dimension, int size)
 {
 	int status;
 
 	status = check_map_chars(raw_str, legend, size);
-	printf("status is %d\n", status);
 	if (status == 0)
 		return (0);
-	status = check_map_lines(raw_str, height, size);
+	status = check_map_lines(raw_str, dimension, size);
+		printf("status is %d\n", status);
 	if (status == 0)
 		return (0);
 	else
@@ -231,20 +274,19 @@ int	check_map(char *raw_str, char *legend, int height, int size)
 }
 
 //Function to parse map and ensure validity of map(line length, symbol legend), and fill legend and board
-int	check_get_map(char *raw_str, char *legend, int height, int size)
+int	check_get_map(char *raw_str, char *legend, int *dimension, int size)
 {
 	int	status;
 
 	//Need to pass the current map in each time, so change this after test
-	status = get_legend(raw_str, legend, height);
+	status = get_legend(raw_str, legend, dimension);
 	if (status == 0)
 		return (0);
-	status = check_map(raw_str, legend, height, size);
+	status = check_map(raw_str, legend, dimension, size);
 	if (status == 0)
 		return (0);
 	else
 		return (1);
-
 }
 
 
@@ -265,15 +307,15 @@ int	main(void)
 	int size;
 	int	status;
 
-	test.file_path = "map4.txt";
+	test.file_path = "map3.txt";
 	size = file_to_string();
 	if (size < 0)
 		printf("malloc error\n");
 		//return (0);
-	status = check_get_map(test.raw, test.legend, test.height, size);
+	status = check_get_map(test.raw, test.legend, test.dimension, size);
 	printf("status is %d\n", status);
-	//printf("legend is %s\n", test.legend);
-	//printf("height is %d\n", test.height);
+	printf("legend is %s\n", test.legend);
+	printf("test.height is %d\n", test.dimension[1]);
 	//printf("size is %d\n", size);
 	//printf("%s\n", test.raw);
 	return (0);
