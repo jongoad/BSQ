@@ -83,7 +83,7 @@ s_data file_to_string(s_data maps)
 }
 
 /**********************************************************************************************/
-/*                                  Status: INCOMPLETE                                        */
+/*                                  Status: COMPLETE                                          */
 /**********************************************************************************************/
 
 
@@ -109,10 +109,11 @@ s_data	get_legend(s_data maps)
 	maps.legend[0] = maps.raw_str[i];
 	maps.legend[1] = maps.raw_str[i + 1];
 	maps.legend[2] = maps.raw_str[i + 2];
+	maps.legend[3] = '\0';
 	return (maps);
 }
 
-//Function to check that legend contains valid chars and no duplicates
+//Function to check that legend contains valid chars and no duplicates//WORKING
 s_data check_legend(s_data maps)
 {
 	int i;
@@ -124,12 +125,12 @@ s_data check_legend(s_data maps)
 	{
 		if (maps.legend[i] < 32)
 			maps.error_status = 1;
-		j = 0;
-		while (maps.legend[j] != '\0')
+		j = 1;
+		while (maps.legend[i + j] != '\0')
 		{
 			if (maps.legend[i] == maps.legend[i + j])
 				maps.error_status = 1;
-			j++;
+			j++; 
 		}
 		i++;
 	}
@@ -162,7 +163,7 @@ int	is_legend(char c, s_data maps)
 		return (0);
 }
 
-//Function to check that map only contains valid chars
+//Function to check that map only contains valid chars//WORKING
 s_data	check_map_chars(s_data maps)
 {
 	int i;
@@ -186,25 +187,25 @@ s_data	check_map_chars(s_data maps)
 	return (maps);
 }
 
-//Function to make sure line lengths are correct
+//Function to make sure line lengths are correct//WORKING
 s_data	check_map_lines(s_data maps)
 {
 	int i;
 	int	line_len;
 
 	i = 0;
-	while (maps.raw_str[i] != '\n') // Iterate to end of first line to avoid legend.
+	while (maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0') // Iterate to end of first line to avoid legend.
 		i++;
 	i++;
-	while (maps.raw_str[i] != '\n') //Get length of first map line
+	while (maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0') //Get length of first map line
 	{
 		maps.width++;
 		i++;
 	}
-	while (++i < maps.size) //Check length of the rest of the lines and get total height
+	while (++i < maps.size && maps.raw_str[i] != '\0') //Check length of the rest of the lines and get total height
 	{
 		line_len = 0;
-		while (maps.raw_str[i] != '\n')
+		while (maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0')
 		{
 			line_len++;
 			i++;
@@ -215,7 +216,7 @@ s_data	check_map_lines(s_data maps)
 	return (maps);
 }
 
-//Function to check that maps has correcy number of lines
+//Function to check that maps has correct number of lines//WORKING
 s_data	check_map_height(s_data maps)
 {
 	int i;
@@ -223,29 +224,29 @@ s_data	check_map_height(s_data maps)
 
 	i = 0;
 	line_count = 0;
-	while (maps.raw_str[i] != '\n') // Iterate to end of first line to avoid legend.
+	while (maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0') // Iterate to end of first line to avoid legend.
 		i++;
 	i++;
 	while (i < maps.size)
 	{
-		while(maps.raw_str[i] != '\n')
+		while(maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0' && (is_legend(maps.raw_str[i], maps) > 0))
 		{
-			line_count++;
 			i++;
 		}
+		line_count++;
 		i++;
 	}
 	if (line_count != maps.height)
 		maps.error_status = 1;
+	printf("%s\nerror is %d\n\n", maps.file_path, maps.error_status);
 	return (maps);
 }
 
-//REDO THIS- STILL NEEDS TO CHECK FOR LINE LENGTH< TOTAL LINE < AT LEAST ONE OBST
+//Function to drive all of the parsing functions
 s_data	check_all(s_data maps)
 {
-
-	maps = check_map_chars(maps);
 	maps = check_legend(maps);
+	maps = check_map_chars(maps);
 	maps = check_map_lines(maps);
 	maps = check_map_height(maps);
 	return (maps);
@@ -264,7 +265,6 @@ char* write_map(s_data maps)
 	while (maps.raw_str[i] != '\n') // Iterate to end of first line to avoid legend.
 		i++;
 	i++;
-	printf("size is %d\n", maps.size);
 	while (i < maps.size)
 	{
 		maps.map[j] = maps.raw_str[i];
@@ -295,7 +295,8 @@ s_data* init_structs(int	argc, char	**argv, s_data* maps)
 		maps[i] = file_to_string(maps[i]);
 		maps[i] = get_legend(maps[i]);
 		maps[i] = check_all(maps[i]);
-		maps[i].map = write_map(maps[i]);
+		if (maps[i].error_status == 0)
+			maps[i].map = write_map(maps[i]);
 		i++;
 	}
 	return (maps);
@@ -319,12 +320,12 @@ int	main(int	argc, char	**argv)
 	i = 0;
 	while (i < argc - 1)
 	{
-		printf("path is %s.\nwidth is %d.\nheight is %d.\n", maps[i].file_path, maps[i].width, maps[i].height);
-		printf("map error status is %d\n", maps[i].error_status);
-		printf("legend is %s\n", maps[i].legend);
-		printf("map %d contains:\n%s\n", i, maps[i].raw_str);
-		printf("\n");
-		printf("final map output is:\n%s", maps[i].map);
+		//printf("path is %s.\nwidth is %d.\nheight is %d.\n", maps[i].file_path, maps[i].width, maps[i].height);
+		//printf("path is %s\n error status is %d\n", maps[i].file_path, maps[i].error_status);
+		//printf("legend is %s\n", maps[i].legend);
+		//printf("map %d contains:\n%s\n", i, maps[i].raw_str);
+		//printf("\n");
+		//printf("final map output is:\n%s", maps[i].map);
 		printf("\n");
 		i++;
 	}
@@ -335,5 +336,9 @@ int	main(int	argc, char	**argv)
 
 //To do
 
-//Transfer raw to final array
-//Fix error handling
+//Read from standard input if no args passed
+//Makefile
+//Header file
+//Test
+
+
