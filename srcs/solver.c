@@ -1,10 +1,5 @@
 #include "ft_header.h"
 
-void	print_full_square(int x_pos, int y_pos, int size, s_data maps);
-int sq_calc(int x_pos, int y_pos, s_data maps);
-
-void	printmap(s_data maps);
-
 int sq_calc(int x_pos, int y_pos, s_data maps)
 {
 	int	x;

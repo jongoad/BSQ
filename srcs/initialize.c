@@ -1,15 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   initialize.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jgoad <marvin@42quebec.com>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/07/28 21:09:30 by jgoad             #+#    #+#             */
+/*   Updated: 2021/07/28 21:09:38 by jgoad            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "ft_header.h"
 
-//Function to write final array for output to solver
-char* write_map(s_data maps)
+char	*write_map(t_data maps)
 {
-	int i;
+	int	i;
 	int	j;
 
 	i = 0;
 	j = 0;
 	maps.map = (char *)malloc(sizeof(char) * (maps.size + 10));
-	while (maps.raw_str[i] != '\n') // Iterate to end of first line to avoid legend.
+	while (maps.raw_str[i] != '\n')
 		i++;
 	i++;
 	while (i < maps.size)
@@ -36,8 +46,7 @@ char	*no_args(void)
 	return ("stdin_map");
 }
 
-//If no files are passed as args, read from standard input
-s_data* init_structs_stdin(s_data* maps)
+t_data	*init_structs_stdin(t_data *maps)
 {	
 	maps[0].error_status = 0;
 	maps[0].width = 0;
@@ -47,19 +56,16 @@ s_data* init_structs_stdin(s_data* maps)
 	maps[0] = check_all(maps[0]);
 	if (maps[0].error_status == 0)
 		maps[0].map = write_map(maps[0]);
-
 	return (maps);
 }
 
-//Function to initialize struct array members and make calls to other init functions
-s_data* init_structs(int	argc, char	**argv, s_data* maps)
+t_data	*init_structs(int	argc, char	**argv, t_data	*maps)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (i < argc - 1)
 	{
-		//maps[i].size = get_file_size(maps[i]);
 		maps[i].error_status = 0;
 		maps[i].width = 0;
 		maps[i].file_path = *(argv + i + 1);
@@ -72,4 +78,3 @@ s_data* init_structs(int	argc, char	**argv, s_data* maps)
 	}
 	return (maps);
 }
-

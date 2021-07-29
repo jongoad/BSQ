@@ -1,8 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parse_map.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jgoad <marvin@42quebec.com>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/07/28 21:10:03 by jgoad             #+#    #+#             */
+/*   Updated: 2021/07/28 21:10:07 by jgoad            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "ft_header.h"
 
-s_data check_legend(s_data maps)
+t_data	check_legend(t_data maps)
 {
-	int i;
+	int	i;
 	int	j;
 
 	i = 0;
@@ -16,16 +27,16 @@ s_data check_legend(s_data maps)
 		{
 			if (maps.legend[i] == maps.legend[i + j])
 				maps.error_status = 1;
-			j++; 
+			j++;
 		}
 		i++;
 	}
 	return (maps);
 }
 
-int	is_legend(char c, s_data maps)
+int	is_legend(char c, t_data maps)
 {
-	int i;
+	int	i;
 	int	is_valid;
 	int	is_obst;
 
@@ -42,17 +53,17 @@ int	is_legend(char c, s_data maps)
 	}
 	if (is_valid == 1 && is_obst == 1)
 		return (2);
-	else if (is_valid  == 1)
+	else if (is_valid == 1)
 		return (1);
 	else
 		return (0);
 }
 
-s_data	check_map_chars(s_data maps)
+t_data	check_map_chars(t_data maps)
 {
-	int i;
+	int	i;
 	int	found_obst;
-	
+
 	found_obst = 0;
 	i = 0;
 	while (maps.raw_str[i] != '\n')
@@ -71,9 +82,9 @@ s_data	check_map_chars(s_data maps)
 	return (maps);
 }
 
-s_data	check_map_lines(s_data maps)
+t_data	check_map_lines(t_data maps)
 {
-	int i;
+	int	i;
 	int	line_len;
 
 	i = 0;
@@ -99,9 +110,9 @@ s_data	check_map_lines(s_data maps)
 	return (maps);
 }
 
-s_data	check_map_height(s_data maps)
+t_data	check_map_height(t_data maps)
 {
-	int i;
+	int	i;
 	int	line_count;
 
 	i = 0;
@@ -111,7 +122,8 @@ s_data	check_map_height(s_data maps)
 	i++;
 	while (i < maps.size)
 	{
-		while(maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0' && (is_legend(maps.raw_str[i], maps) > 0))
+		while ((maps.raw_str[i] != '\n' && maps.raw_str[i] != '\0')
+			&& (is_legend(maps.raw_str[i], maps) > 0))
 		{
 			i++;
 		}
