@@ -3,12 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   solver.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jgoad <marvin@42quebec.com>                +#+  +:+       +#+        */
+/*   By: iyahoui- <marvin@42quebec.com>             +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/07/28 21:12:06 by jgoad             #+#    #+#             */
-/*   Updated: 2021/07/28 21:12:12 by jgoad            ###   ########.fr       */
+/*   Created: 2021/07/28 21:58:46 by iyahoui-          #+#    #+#             */
+/*   Updated: 2021/07/28 21:58:48 by iyahoui-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "ft_header.h"
 
 int	sq_calc(int x_pos, int y_pos, t_data maps)
@@ -27,17 +28,17 @@ int	sq_calc(int x_pos, int y_pos, t_data maps)
 		x = x_pos;
 		y = y_pos + size;
 		while ((maps.map[x + (maps.width + 1) * y] != maps.legend[1])
-			&& x < x_pos + size && x < maps.width && y < maps.height && y > 0)
+			&& x < x_pos + size && x < maps.width && y < maps.height && y >= 0)
 		{
 			x++;
 			if (maps.map[x + (maps.width + 1) * y] == maps.legend[1])
 				return (size);
-			while (x == x_pos + size && y-- > y_pos)
+			while (x == x_pos + size && --y > y_pos)
 				if (maps.map[x + (maps.width + 1) * y] == maps.legend[1])
 					return (size);
 		}
 	}
-	return (size - 1);
+	return (size);
 }
 
 void	solver(t_data maps)
@@ -52,7 +53,7 @@ void	solver(t_data maps)
 		ft_putchar(10, 2);
 		return ;
 	}
-	size = find_biggest_square(&x_pos, &y_pos, maps);
+	size = find_big_sq(&x_pos_biggest, &y_pos_biggest, maps);
 	if (maps.error_status == 0)
 	{
 		print_full_square(x_pos_biggest, y_pos_biggest, size, maps);
