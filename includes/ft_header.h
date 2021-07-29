@@ -6,7 +6,7 @@
 /*   By: jgoad <marvin@42quebec.com>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/07/28 21:08:53 by jgoad             #+#    #+#             */
-/*   Updated: 2021/07/28 21:09:07 by jgoad            ###   ########.fr       */
+/*   Updated: 2021/07/28 21:14:07 by jgoad            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 #ifndef FT_HEADER_H
@@ -46,5 +46,6 @@ void	solver(t_data maps);
 void	print_full_square(int x_pos, int y_pos, int size, t_data maps);
 void	solver(t_data maps);
 int		sq_calc(int x_pos, int y_pos, t_data maps);
+int		find_big_sq(int *x_pos_biggest, int *y_pos_biggest, t_data maps);
 
 #endif
