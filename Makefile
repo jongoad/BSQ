@@ -1,6 +1,6 @@
-SRCS	= ./srcs/solver.c ./srcs/main.c ./srcs/initialize.c ./srcs/parse_map.c ./srcs/parse_more.c 
+SRCS	= ./srcs/main.c ./srcs/initialize.c ./srcs/parse_map.c ./srcs/parse_more.c ./srcs/solver.c
 
-INCS	= includes
+INCL	= includes
 OBJS	= ${SRCS:.c=.o}
 
 NAME	= bsq
